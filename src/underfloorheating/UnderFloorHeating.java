@@ -1,11 +1,9 @@
 package underfloorheating;
-
 /**
  *
  * @author EuroPepe
  */
 public class UnderFloorHeating {
-
     /**
      * @param args the command line arguments
      */

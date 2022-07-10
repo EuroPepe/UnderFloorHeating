@@ -8,10 +8,12 @@ import java.util.LinkedList;
  */
 
 public class Logic {
-    private int x = 500;
-    private int y = 500;
-    private int pitch = 25;
-    private int increaser = 5;
+    Input input = new Input();
+    private int x = input.getX();
+    private int y = input.getY();
+    private int pitch = input.getPitch();
+    private int increaser = input.getIncreaser();
+    private int radius = input.getRadius();
     
     private int[] pitchArrayX;
     private int[] pitchArrayY;
@@ -21,7 +23,46 @@ public class Logic {
         pitchArrayX = increasedPitch.getArrayX();
         pitchArrayY = increasedPitch.getArrayY();
         CountLength countLength = new CountLength(x, y, pitchArrayX, pitchArrayY);
-        System.out.printf("\nLength: %d\n", countLength.getLength());
+        System.out.printf("\nLength: %d cm\n", countLength.getLength());
+        Rounding rounding = new Rounding(radius, countLength.getWallCounter(), countLength.getLoopCounter(), countLength.getLength());
+        System.out.printf("\nLength: %.2f m\n", rounding.getLength()/100);
+    }
+}
+/**
+ * trida nahradi delku pravouhleho lomeni za delku zaobleni
+ * @author EuroPepe
+ */
+class Rounding{
+    Rounding(int r,int wallCounter, int loopCounter, double lengthPipe){
+        this.r=r;
+        this.wallCounter=wallCounter;
+        this.loopCounter=loopCounter;
+        this.lengthPipe=lengthPipe;
+        resizeLength();
+    }
+    private final int r, wallCounter, loopCounter;
+    private double lengthPipe;
+    //metoda vrati celkovy pocet zaobleni
+    private int countNumberRounding(){
+        //loopCounter vyjadruje pocet smycek, tj.: pocet uplnych smycek okolo sten, proto se nasobi ctyrma
+        //wallCounter vyjadruje pocet vypocitanych sten y necele smycky
+        // nasobi se cele dvema, bo trubky jsou dve
+        int i = ((loopCounter*4)+wallCounter)*2;
+        return i;
+    }
+    //metoda spocita delku vsech zaobleni
+    private double countRoundingLength(){
+        double length = ((Math.PI*r)/2.0)*(double)countNumberRounding(); //delka ctvrtKruznice krat pocet
+        return length;
+    }
+    //metoda nahradi delku lomeni za delku zaobleni
+    private void resizeLength(){
+        //lengthPipe je spocitana delka potrubi s pravouhlym lomenim
+        //2*r*countNumberRounding() je delka, pravouhleho lomeni, ktera se nahradi delkou zaobleni
+        lengthPipe = lengthPipe-(2.0*r*(double)countNumberRounding())+countRoundingLength();
+    }
+    protected double getLength(){
+        return lengthPipe;
     }
 }
 /**
@@ -34,7 +75,7 @@ class CountLength{
         this.Y=Y;
         this.PITCH_ARRAY_X=PITCH_ARRAY_X;
         this.PITCH_ARRAY_Y=PITCH_ARRAY_Y;
-        countInput();
+        countInput();  
     }
     private int length = 0;  //spocitana delka
     private boolean bool = true;  //podminka pokracovani cyklu
@@ -121,8 +162,13 @@ class CountLength{
     protected int getLength(){
         return length;
     }
+    protected int getLoopCounter(){
+        return loopCounter;
+    }
+    protected int getWallCounter(){
+        return wallCounter;
+    }
 }
-
 /**
  * trida vytvori pole vzdalenosti jednotlivych trubek od zdi pro danou osu,
  * pricemz na zacatku pole jsou stupnujici se roztece, pak uz jen standartni
@@ -160,8 +206,8 @@ class IncreasedPitch{
         pitchArrayY = new int[size];
         makeIncreasedArray(pitchArrayY, pitchList);
         
-        show(pitchArrayX);
-        show(pitchArrayY);
+        //show(pitchArrayX);
+        //show(pitchArrayY);
     }
     
     //metoda vytvori list stupnujicich se rozteci od nejmensi INCREASER az po standartni PITCH
